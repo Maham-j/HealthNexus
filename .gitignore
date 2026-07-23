@@ -1,7 +1,7 @@
 # Environment
 .env
 venv/
-env/
+env/ 
 .venv/
 
 # Python
