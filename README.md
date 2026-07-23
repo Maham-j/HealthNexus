@@ -23,11 +23,9 @@ make dev             # runs the API with auto-reload on http://localhost:8000
 
 Interactive API docs (Swagger) once running: `http://localhost:8000/docs`
 
-## Free LLM API research (no credit card required)
+## Free LLM API research 
 
-OpenAI does **not** offer a free API tier as of 2026 — new accounts get
-no free credits, and there's no free production key. These are legitimate
-free alternatives, all sign up with just an email, no card:
+
 
 | Provider | Model(s) | Free limit | Notes |
 |---|---|---|---|
@@ -61,20 +59,11 @@ app/
 
 ## Git workflow
 
-All work happens on a feature branch — **never commit directly to `main`**.
-
 ```bash
 git checkout -b feature/codebase-setup
 git add .
 git commit -m "Set up initial project structure, Neo4j connector, and both LLM chains"
 git push -u origin feature/codebase-setup
-# then open a PR and add mentor as reviewer
 ```
 
-## Next steps (not yet implemented)
 
-- Decide on the actual GraphRAG retrieval strategy (currently a naive
-  keyword-match placeholder in `qa_chain.py` — needs a proper approach,
-  e.g. full-text index or embeddings).
-- Frontend (library TBD).
-- Auth / rate limiting on endpoints before any public deployment.
