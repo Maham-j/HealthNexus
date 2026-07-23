@@ -1,8 +1,14 @@
 """
-Request/response models. TODO: define as needed.
+Request/response models.
 """
 from pydantic import BaseModel
 
 
-class QuestionRequest(BaseModel):
-    question: str
+class RawCypherRequest(BaseModel):
+    cypher: str
+    params: dict = {}
+
+
+class RawCypherResponse(BaseModel):
+    rows: list[dict]
+    count: int
