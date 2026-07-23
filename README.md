@@ -1,5 +1,37 @@
 # HealthNexus — Medical Knowledge Graph & Clinical Reasoning System
 
+
+```
+healthnexus/
+├── .env.example
+├── .gitignore
+├── Makefile
+├── requirements.txt
+├── README.md
+├── app/
+│   ├── __init__.py
+│   ├── main.py                  # FastAPI entrypoint
+│   ├── config.py                # loads .env, settings
+│   ├── api/
+│   │   ├── __init__.py
+│   │   └── routes.py            # /health endpoint working; /ask/cypher, /ask/graphrag, /query/raw as TODOs
+│   ├── core/
+│   │   ├── __init__.py
+│   │   ├── neo4j_connector.py   # Neo4jConnector class stub (methods raise NotImplementedError)
+│   │   └── llm_client.py        # LLM provider setup — TODO
+│   ├── chains/
+│   │   ├── __init__.py
+│   │   ├── cypher_chain.py      # ask_via_cypher() stub — TODO
+│   │   └── qa_chain.py          # GraphRAG chain — TODO
+│   └── models/
+│       ├── __init__.py
+│       └── schemas.py           # request/response Pydantic models — TODO
+├── tests/
+│   └── test_endpoints.py
+└── scripts/
+    └── check_neo4j_connection.py
+```
+    
 GraphRAG over a Neo4j-backed medical knowledge graph (PrimeKG), with two
 LLM interaction modes:
 
