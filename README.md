@@ -5,9 +5,11 @@
 healthnexus/
 ├── .env.example
 ├── .gitignore
+├── .gitignore-python
 ├── Makefile
 ├── requirements.txt
 ├── README.md
+├── pyproject.toml
 ├── app/
 │   ├── __init__.py
 │   ├── main.py                  # FastAPI entrypoint
@@ -28,6 +30,14 @@ healthnexus/
 │       └── schemas.py           # request/response Pydantic models — TODO
 ├── tests/
 │   └── test_endpoints.py
+├── docs/
+|   ├── installation_and_setup.md
+|   ├── neo4j_cypher_setup.md
+|   ├── llm_provider_setup.md
+|   ├── graphrag_architecture.md
+|   ├── api_reference.md
+|   ├── environment_variables.md
+|   └── git_workflow.md
 └── scripts/
     └── check_neo4j_connection.py
 ```
