@@ -1,0 +1,34 @@
+[tool.poetry]
+name = "healthnexus"
+version = "0.1.0"
+description = "Medical Knowledge Graph & Clinical Reasoning System — GraphRAG over Neo4j"
+authors = ["Maham Jamil"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "*"
+uvicorn = {extras = ["standard"], version = "*"}
+python-dotenv = "*"
+pydantic = "*"
+pydantic-settings = "*"
+
+neo4j = "*"
+
+langchain = "*"
+langchain-community = "*"
+langchain-neo4j = "*"
+langgraph = "*"
+
+langchain-google-genai = "*"
+langchain-openai = "*"
+langchain-groq = "*"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+httpx = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
