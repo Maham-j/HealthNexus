@@ -240,7 +240,7 @@ ollama run llama3.2:latest
 
 ## verification
 
-![verification](images/ollama-working-verification.jpg)
+![verification](images/ollama-working-verification.JPG)
 
 ## Successful Chat Response
 
