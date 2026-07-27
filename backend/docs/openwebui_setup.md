@@ -126,7 +126,7 @@ http://localhost:3000
 Create an account and log in.
 
 ## Login Page
-![Login Page](images/login-page.png)
+![Login Page](images/login.png)
 ---
 
 # Environment Variables
@@ -240,11 +240,11 @@ ollama run llama3.2:latest
 
 ## verification
 
-![verification](images/ollama-working-verification.png)
+![verification](images/ollama-working-verification.jpg)
 
 ## Successful Chat Response
 
-![Successful Chat](images/chat-response.png)
+![Successful Chat](images/chat.png)
 
 The following functionality was verified successfully:
 
