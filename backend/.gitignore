@@ -1,0 +1,29 @@
+# Environment
+.env
+venv/
+env/ 
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Data (don't commit large dataset files)
+data/
+*.csv
+*.tsv
