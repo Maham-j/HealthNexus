@@ -40,7 +40,7 @@ uvicorn app.main:app --reload
 The server started successfully and was accessible for API testing.
 
 
-![FastAPI Server](images/fastapi-server-running.png)
+![FastAPI Server](images/fastapi-server-running.PNG)
 
 ---
 
@@ -68,7 +68,7 @@ The implemented endpoints were tested using **Postman** before integrating OpenW
 The `GET /v1/models` endpoint was tested to verify that the FastAPI backend could successfully retrieve the available Ollama models.
 
 
-![Available Models](images/models-check(2).png)
+![Available Models](images/models-check.png)
 
 ---
 
@@ -180,7 +180,7 @@ The integration was verified by sending chat messages through OpenWebUI and rece
 
 ### FastAPI Connection
 
-![FastAPI Connection](images/fast-api-connection check.png)
+![FastAPI Connection](images/fast-api-connection-check.png)
 
 ### Chat Verification
 
