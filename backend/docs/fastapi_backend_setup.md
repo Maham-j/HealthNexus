@@ -193,7 +193,7 @@ The integration was verified by sending chat messages through OpenWebUI and rece
 The OpenWebUI Docker container was verified to be running successfully during integration.
 
 
-![Docker Container Status](images/docker image check.png)
+![Docker Container Status](images/docker-image-check.png)
 
 ---
 
