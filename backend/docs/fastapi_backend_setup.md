@@ -39,7 +39,6 @@ uvicorn app.main:app --reload
 
 The server started successfully and was accessible for API testing.
 
-### Screenshot
 
 ![FastAPI Server](images/fastapi-server-running.png)
 
@@ -68,9 +67,8 @@ The implemented endpoints were tested using **Postman** before integrating OpenW
 
 The `GET /v1/models` endpoint was tested to verify that the FastAPI backend could successfully retrieve the available Ollama models.
 
-**Screenshot**
 
-![Available Models](images/models-check.png)
+![Available Models](images/models-check(2).png)
 
 ---
 
@@ -83,7 +81,7 @@ The `POST /v1/chat/completions` endpoint was tested by sending:
 
 The backend successfully processed the request through Ollama and returned an OpenAI-compatible response.
 
-**Screenshot**
+
 
 ![POST Endpoint Test](images/check-post-endpoint.png)
 
@@ -93,7 +91,6 @@ The backend successfully processed the request through Ollama and returned an Op
 
 Additional testing confirmed that the selected model was responding correctly through the FastAPI backend.
 
-**Screenshot**
 
 ![Model Verification](images/model-check-postman.png)
 
@@ -183,7 +180,7 @@ The integration was verified by sending chat messages through OpenWebUI and rece
 
 ### FastAPI Connection
 
-![FastAPI Connection](images/fast-api-connect.png)
+![FastAPI Connection](images/fast-api-connection check.png)
 
 ### Chat Verification
 
@@ -195,9 +192,8 @@ The integration was verified by sending chat messages through OpenWebUI and rece
 
 The OpenWebUI Docker container was verified to be running successfully during integration.
 
-### Screenshot
 
-![Docker Container Status](images/docker-image-check.png)
+![Docker Container Status](images/docker image check.png)
 
 ---
 
