@@ -211,6 +211,43 @@ Changes included:
 - Documentation updates
 
 ---
+You can add this as a small section at the end of your documentation.
+
+---
+
+## Update: Migrated from Ollama to Gemini
+
+Initially, the OpenAI-compatible FastAPI backend was integrated with **Ollama** for local inference. During testing, response generation was noticeably slower, especially when accessed through OpenWebUI. To improve responsiveness and provide a smoother user experience, the backend was migrated to **Google Gemini** using the **Google GenAI SDK**.
+
+The integration now follows the flow:
+
+```text
+OpenWebUI → FastAPI (OpenAI-compatible API) → Gemini API
+```
+
+Streaming responses were also implemented so that responses are displayed token-by-token in OpenWebUI instead of waiting for the complete output.
+
+### Verification
+
+The following tests were performed successfully:
+
+* **GET `/v1/models`** – Verified that the FastAPI backend exposes the available Gemini model.
+
+
+![response in Postman](images/get.png)
+  
+
+* **POST `/v1/chat/completions`** – Verified successful communication between FastAPI and Gemini using the OpenAI-compatible endpoint.
+
+![response in Postman](images/post.png)
+
+
+* **OpenWebUI Chat** – Verified that OpenWebUI communicates with the FastAPI backend and receives **streaming responses** from Gemini.
+
+![response in Postman](images/chat_check.png)
+
+  
+This migration resulted in faster response times and real-time streaming while preserving the OpenAI-compatible interface for OpenWebUI.
 
 # Summary
 
@@ -226,3 +263,4 @@ Completed work:
 - ✅ Verified end-to-end chat through OpenWebUI
 - ✅ Verified Docker container execution
 - ✅ Managed changes using Git/GitHub
+- ✅ Verified Gemini model.
