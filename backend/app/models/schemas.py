@@ -22,3 +22,4 @@ class ChatMessage(BaseModel):
 class ChatCompletionRequest(BaseModel):
     model: str
     messages: List[ChatMessage]
+    stream: bool = False
