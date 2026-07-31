@@ -38,9 +38,12 @@ def chat(model: str, messages: list):
     )
 
     return client.models.generate_content_stream(
-        model=model,
-        contents=prompt,
-    )
+    model=model,
+    contents=prompt,
+    config=types.GenerateContentConfig(
+        tools=[neo4j_tool],
+    ),
+)
 
 def get_models():
     return {
