@@ -35,6 +35,6 @@ Result:
 * Returned a summarized response to the user.
 
 ![response ](images/tool_calling.png)
-![response ](images/response_check.png)
+![response ](images/response_check.PNG)
 
 ---
