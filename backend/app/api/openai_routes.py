@@ -1,8 +1,6 @@
 """
 OpenAI-compatible API routes for OpenWebUI.
 """
-import json
-from fastapi.responses import StreamingResponse
 from fastapi import APIRouter
 from fastapi import HTTPException
 from app.models.schemas import ChatCompletionRequest
@@ -17,68 +15,107 @@ async def list_models():
 
 
 
-
 @router.post("/chat/completions")
 async def chat_completions(request: ChatCompletionRequest):
+    print("CHAT ENDPOINT HIT")
 
+    
     try:
-
-        stream = chat(
-            model=request.model,
-            messages=[message.model_dump() for message in request.messages],
-        )
-
-        if not request.stream:
-
-            text = ""
-
-            for chunk in stream:
-                if chunk.text:
-                    text += chunk.text
-
-            return {
-                "id": "chatcmpl-1",
-                "object": "chat.completion",
-                "choices": [
-                    {
-                        "index": 0,
-                        "message": {
-                            "role": "assistant",
-                            "content": text,
-                        },
-                        "finish_reason": "stop",
-                    }
-                ],
-            }
-
-        async def event_stream():
-
-            for chunk in stream:
-
-                if chunk.text:
-
-                    data = {
-                        "id": "chatcmpl-1",
-                        "object": "chat.completion.chunk",
-                        "choices": [
-                            {
-                                "index": 0,
-                                "delta": {
-                                    "content": chunk.text
-                                },
-                                "finish_reason": None
-                            }
-                        ]
-                    }
-
-                    yield f"data: {json.dumps(data)}\n\n"
-
-            yield "data: [DONE]\n\n"
-
-        return StreamingResponse(
-            event_stream(),
-            media_type="text/event-stream",
-        )
+        print("MESSAGES:", [m.model_dump() for m in request.messages])
+        print("REQUEST MODEL:", request.model)
+        response = chat(
+        model=request.model,
+        messages=[message.model_dump() for message in request.messages],
+)
+        print(response)
+        
+        return {
+            "id": "chatcmpl-1",
+            "object": "chat.completion",
+            "choices": [
+                {
+                    "index": 0,
+                    "message": {
+                        "role": "assistant",
+                        "content": response["text"],
+                    },
+                    "finish_reason": "stop",
+        }
+    ],
+}
 
     except Exception as e:
+        print("ERROR:", e)
         raise HTTPException(status_code=500, detail=str(e))
+# @router.post("/chat/completions")
+# async def chat_completions(request: ChatCompletionRequest):
+
+#     try:
+
+#         stream = chat(
+#             model=request.model,
+#             messages=[message.model_dump() for message in request.messages],
+#         )
+
+#         if not request.stream:
+
+#             text = ""
+
+#             for chunk in stream:
+#                 if chunk.text:
+#                     text += chunk.text
+
+#             return {
+#                 "id": "chatcmpl-1",
+#                 "object": "chat.completion",
+#                 "choices": [
+#                     {
+#                         "index": 0,
+#                         "message": {
+#                             "role": "assistant",
+#                             "content": text,
+#                         },
+#                         "finish_reason": "stop",
+#                     }
+#                 ],
+#             }
+
+#         async def event_stream():
+
+#             for chunk in stream:
+
+#                 if chunk.text:
+
+#                     data = {
+#                         "id": "chatcmpl-1",
+#                         "object": "chat.completion.chunk",
+#                         "choices": [
+#                             {
+#                                 "index": 0,
+#                                 "delta": {
+#                                     "content": chunk.text
+#                                 },
+#                                 "finish_reason": None
+#                             }
+#                         ]
+#                     }
+
+#                     yield f"data: {json.dumps(data)}\n\n"
+
+#             yield "data: [DONE]\n\n"
+
+#         return StreamingResponse(
+#             event_stream(),
+#             media_type="text/event-stream",
+#         )
+
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/hello")
+async def hello():
+    print("HELLO ROUTE HIT")
+    return {
+        "message": "This is MY backend"
+    }
