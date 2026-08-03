@@ -44,8 +44,9 @@ def build_tool_description():
                 tool to retrieve information from the knowledge graph, even if the user does not explicitly 
                 mention the graph.
 
-                If the requested information cannot be found in the knowledge graph or is outside its scope, 
-                inform the user that it is not available in the medical knowledge graph.
+                If the requested information cannot be found in the knowledge graph, state that the information 
+                is not available in the PrimeKG medical knowledge graph. Do not use external knowledge or 
+                assumptions to fill missing information.
 
                 Do not add explanations, facts, or biomedical knowledge that are not directly supported by the 
                 retrieved knowledge graph results. If the graph does not contain the requested information or explanation, 
@@ -81,7 +82,7 @@ def build_tool_description():
                 WHERE n.node_type = 'disease'
                 AND m.node_type = 'gene/protein'
                 AND toLower(n.node_name) = 'asthma'
-                RETURN m.node_name
+                RETURN DISTINCT m.node_name
 
                 Never use labels like Disease or relationships like RELATED_TO.
                 """
