@@ -17,9 +17,6 @@ async def list_models():
 
 
 
-
-
-
 @router.post("/chat/completions")
 async def chat_completions(request: ChatCompletionRequest):
     print("CHAT ENDPOINT HIT")
