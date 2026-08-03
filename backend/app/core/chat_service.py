@@ -89,19 +89,6 @@ def chat(model: str, messages: list):
             "tool_call": False,
         }
             
-# def chat(model: str, messages: list):
-
-#     prompt = "\n".join(
-#         [message["content"] for message in messages]
-#     )
-
-#     return client.models.generate_content_stream(
-#     model=model,
-#     contents=prompt,
-#     config=types.GenerateContentConfig(
-#         tools=[neo4j_tool],
-#     ),
-# )
 
 def get_models():
     print("GETTING MODELS")

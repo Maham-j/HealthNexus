@@ -1,66 +1,71 @@
-"""This file's job is only to define the tool and execute the query."""
-
+"""Defines the Neo4j tool, dynamically builds its schema description,
+and executes Cypher queries against the Neo4j database.
 """
-Neo4j tool for Gemini function calling.
-"""
-
 from app.core.neo4j_connector import neo4j_connector
 
 
+def get_node_types():
+    query = """
+    MATCH (n:Entity)
+    RETURN DISTINCT n.node_type AS node_type
+    ORDER BY node_type
+    """
+    result = neo4j_connector.run_query(query)
+    return [r["node_type"] for r in result]
 
-# ---------- Groq: plain dict, OpenAI-style function calling ----------
-neo4j_tool_groq = {
-    "type": "function",
-    "function": {
-        "name": "execute_neo4j_query",
-        "description": """
-                Use this tool whenever the user asks about information stored in the medical knowledge graph, PrimeKG, Neo4j, diseases, drugs, proteins, pathways, or biomedical relationships. 
-                Do not answer from memory if the user explicitly asks to use the graph.
-                Execute Cypher queries against the PrimeKG medical knowledge graph.
 
+def get_node_properties():
+    query = """
+    MATCH (n:Entity)
+    RETURN keys(n) AS properties
+    LIMIT 1
+    """
+    result = neo4j_connector.run_query(query)
+    return result[0]["properties"]
+
+
+def get_relationship_types():
+    query = """
+    MATCH ()-[r]->()
+    RETURN DISTINCT type(r) AS relationshipType
+    ORDER BY relationshipType
+    """
+    result = neo4j_connector.run_query(query)
+    return [r["relationshipType"] for r in result]
+
+def build_tool_description():
+    node_properties = get_node_properties()
+    node_types = get_node_types()
+    relationship_types = get_relationship_types()
+
+    return f"""
+                Use this tool for all biomedical and medical questions. Treat the PrimeKG medical knowledge 
+                graph as the only source of truth. Do not answer from your own knowledge. Always use this 
+                tool to retrieve information from the knowledge graph, even if the user does not explicitly 
+                mention the graph.
+
+                If the requested information cannot be found in the knowledge graph or is outside its scope, 
+                inform the user that it is not available in the medical knowledge graph.
+
+                Do not add explanations, facts, or biomedical knowledge that are not directly supported by the 
+                retrieved knowledge graph results. If the graph does not contain the requested information or explanation, 
+                explicitly state that it is not available in the knowledge graph rather than relying on external knowledge.
+
+                The knowledge graph contains the following schema:
                 Database schema:
 
                 Node label:
                 - Entity
 
                 Node properties:
-                - node_name
-                - node_type
-                - node_id
-                - node_source
-                - node_index
+                {chr(10).join("- " + p for p in node_properties)}
 
                 Possible node types:
-                - disease
-                - drug
-                - gene/protein
-                - effect/phenotype
-                - pathway
-                - exposure
-                - biological_process
-                - molecular_function
-                - cellular_component
+                {chr(10).join("- " + t for t in node_types)}
 
-                Relationship types include:
-                - protein_protein
-                - drug_protein
-                - contraindication
-                - indication
-                - off-label use
-                - drug_drug
-                - phenotype_protein
-                - phenotype_phenotype
-                - disease_phenotype_negative
-                - disease_phenotype_positive
-                - disease_protein
-                - disease_disease
-                - drug_effect
-                - bioprocess_bioprocess
-                - molfunc_molfunc
-                - cellcomp_cellcomp
-                - molfunc_protein
-                - cellcomp_protein
-                - bioprocess_protein
+                Relationship types:
+                {chr(10).join("- " + r for r in relationship_types)}
+
                 Always use:
                 MATCH (n:Entity)
 
@@ -70,9 +75,22 @@ neo4j_tool_groq = {
                 Search names using:
                 n.node_name
 
+                Example disease query:
+
+                MATCH (n:Entity)-[:disease_protein]-(m:Entity)
+                WHERE n.node_type = 'disease'
+                AND m.node_type = 'gene/protein'
+                AND toLower(n.node_name) = 'asthma'
+                RETURN m.node_name
+
                 Never use labels like Disease or relationships like RELATED_TO.
                 """
-        ,           
+# ---------- Groq: plain dict, OpenAI-style function calling ----------
+neo4j_tool_groq = {
+    "type": "function",
+    "function": {
+        "name": "execute_neo4j_query",
+        "description": build_tool_description(),
         "parameters": {
             "type": "object",
             "properties": {

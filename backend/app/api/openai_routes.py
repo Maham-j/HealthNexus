@@ -1,8 +1,6 @@
 """
 OpenAI-compatible API routes for OpenWebUI.
 """
-import json
-from fastapi.responses import StreamingResponse
 from fastapi import APIRouter
 from fastapi import HTTPException
 from app.models.schemas import ChatCompletionRequest
