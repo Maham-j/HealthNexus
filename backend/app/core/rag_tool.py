@@ -1,11 +1,104 @@
+"""Given a user's question, find the most similar questions from our Excel knowledge bank."""
+
 from pathlib import Path
 
-import pandas as pd
-from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
+import pandas as pd
+from sentence_transformers import SentenceTransformer
+
 
 
 class RAGTool:
+
     def __init__(self):
-        pass
+
+        excel_path = (
+            Path(__file__).resolve().parent.parent
+            / "data"
+            / "PrimeKG_manual_databank.xlsx"
+        )
+
+        print("Loading Excel...")
+        self.df = pd.read_excel(excel_path)
+
+        required_columns = [
+            "User Question",
+            "Cypher Query",
+            "Neo4J Response",
+            "LLM Finding",
+        ]
+
+        missing = [
+            col for col in required_columns
+            if col not in self.df.columns
+        ]
+
+        if missing:
+            raise ValueError(f"Missing columns: {missing}")
+
+        print("Loading embedding model...")
+        self.model = SentenceTransformer(
+            "sentence-transformers/all-MiniLM-L6-v2"
+        )
+
+        questions = self.df["User Question"].tolist()
+
+        print("Creating embeddings...")
+        embeddings = self.model.encode(
+            questions,
+            convert_to_numpy=True
+        ).astype("float32")
+
+        dimension = embeddings.shape[1]
+
+        print("Building FAISS index...")
+        self.index = faiss.IndexFlatL2(dimension)
+
+        self.index.add(embeddings)
+        print("RAG tool initialized!")
+
+    
+    """This function take the LLM-generated natural language query.
+        Convert it into an embedding.
+        Search the FAISS index.
+        Return the top-k most similar examples."""
+    def fetch_similar_queries(self, query: str, top_k: int = 3):
+
+        query_embedding = self.model.encode(
+            [query],
+            convert_to_numpy=True
+        ).astype("float32")
+
+        distances, indices = self.index.search(
+            query_embedding,
+            top_k
+        )
+
+        results = []
+
+        for idx in indices[0]:
+            results.append({
+                "question": self.df.iloc[idx]["User Question"],
+                "cypher": self.df.iloc[idx]["Cypher Query"],
+                "finding": self.df.iloc[idx]["LLM Finding"],
+            })
+
+        return results
+        
+
+rag_tool = RAGTool()
+
+
+if __name__ == "__main__":
+        
+        print("Testing search...")
+        results = rag_tool.fetch_similar_queries(
+            "What diseases cause red itchy eyes?"
+        )
+
+        for result in results:
+            print(result)
+
+
+
