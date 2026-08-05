@@ -27,7 +27,8 @@ Implement `fetchSimilarQueries` as a RAG tool that retrieves similar Cypher exam
 The RAG index initially returned a `finding` field alongside `question` and `cypher`. The LLM sometimes echoed this stored text directly as its final answer instead of querying Neo4j.
 
 **Fix:** Removed `finding` from `fetch_similar_queries()`'s return value in `rag_tool.py`.
-
+ 
+# before fix
 ![finding leak before fix](images/rag_leak_before.png)
 ![finding removed after fix](images/rag_leak_fixed.png)
 
