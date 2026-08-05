@@ -2,6 +2,7 @@
 and executes Cypher queries against the Neo4j database.
 """
 from app.core.neo4j_connector import neo4j_connector
+import time
 
 
 def get_node_types():
@@ -34,10 +35,20 @@ def get_relationship_types():
     return [r["relationshipType"] for r in result]
 
 def build_tool_description():
-    node_properties = get_node_properties()
-    node_types = get_node_types()
-    relationship_types = get_relationship_types()
 
+    start = time.time()
+    node_properties = get_node_properties()
+    print(f"Properties: {time.time() - start:.2f}s")
+
+    start = time.time()
+    node_types = get_node_types()
+    print(f"Node types: {time.time() - start:.2f}s")
+
+    start = time.time()
+    relationship_types = get_relationship_types()
+    print(f"Properties: {time.time() - start:.2f}s")
+
+    
     return f"""
                 Use this tool for all biomedical and medical questions. Treat the PrimeKG medical knowledge 
                 graph as the only source of truth. Do not answer from your own knowledge. Always use this 
@@ -67,31 +78,30 @@ def build_tool_description():
                 Relationship types:
                 {chr(10).join("- " + r for r in relationship_types)}
 
-                Always use:
-                MATCH (n:Entity)
-
-                Filter diseases using:
-                WHERE n.node_type = 'disease'
-
-                Search names using:
-                n.node_name
-
-                Example disease query:
-
-                MATCH (n:Entity)-[:disease_protein]-(m:Entity)
-                WHERE n.node_type = 'disease'
-                AND m.node_type = 'gene/protein'
-                AND toLower(n.node_name) = 'asthma'
-                RETURN DISTINCT m.node_name
-
+                Cypher rules:
+                    - Always use MATCH (n:Entity).
+                    - Never use labels like Disease or Gene.
+                    - Always filter using node_type.
+                    - Search names using node_name.
+                    - Use only relationships provided in the schema.
+                    - For string matching, use toLower().
+                      Use the retrieved examples to construct a new Cypher query.
                 Never use labels like Disease or relationships like RELATED_TO.
                 """
+
+
+
+start = time.time()
+print("Building tool description...")
+description = build_tool_description()
+print(f"Tool description built in {time.time() - start:.2f}s")
+
 # ---------- Groq: plain dict, OpenAI-style function calling ----------
 neo4j_tool_groq = {
     "type": "function",
     "function": {
         "name": "execute_neo4j_query",
-        "description": build_tool_description(),
+        "description": description,
         "parameters": {
             "type": "object",
             "properties": {
@@ -110,3 +120,6 @@ def execute_neo4j_query(cypher_query: str):
     Executes a Cypher query against the Neo4j database.
     """
     return neo4j_connector.run_query(cypher_query)
+
+if __name__ == "__main__":
+    print(description)
