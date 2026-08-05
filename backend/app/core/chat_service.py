@@ -16,39 +16,48 @@ groq_client = Groq(
 )
 
 def should_use_neo4j_tool(messages):
-    """
-    Return True only for biomedical questions.
-    Skip OpenWebUI metadata requests and general chat.
-    """
     if not messages:
         return False
 
-    prompt = messages[-1].get("content", "").lower()
-    # OpenWebUI internal requests
+    prompt = messages[-1].get("content", "")
+    prompt_lower = prompt.lower()
+
     metadata_patterns = [
         "### task:",
         "generate a concise",
         "generate 1-3 broad tags",
         "suggest 3-5 relevant follow-up questions",
     ]
-
-    if any(pattern in prompt for pattern in metadata_patterns):
+    if any(pattern in prompt_lower for pattern in metadata_patterns):
         return False
 
-    medical_keywords = [
-        "disease", "protein", "gene", "drug", "medicine",
-        "symptom", "treatment", "diagnosis", "therapy",
-        "cancer", "asthma", "diabetes", "covid",
-        "patient", "virus", "bacteria", "infection",
-        "heart", "lung", "kidney", "brain"
-    ]
-
-    return any(keyword in prompt for keyword in medical_keywords)
+    try:
+        resp = groq_client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            temperature=0,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "Reply with exactly one word: YES if the message is a biomedical "
+                        "or medical question (including diseases, symptoms, treatments, genes, "
+                        "drugs, drug interactions, lifestyle/management of a condition, or risk "
+                        "factors). Reply NO if it is casual conversation or unrelated to health."
+                    ),
+                },
+                {"role": "user", "content": prompt},
+            ],
+        )
+        answer = resp.choices[0].message.content.strip().upper()
+        return answer.startswith("Y")
+    except Exception as e:
+        print("ROUTER CALL FAILED:", e)
+        return False
 
 def chat(model: str, messages: list):
     print("MODEL RECEIVED:", model)
 
-    if not model.startswith("llama"):
+    if not (model.startswith("llama") or model.startswith("openai/gpt-oss")):
         return {"text": "Unsupported model.", "tool_call": False}
 
     print("USING GROQ")
@@ -80,22 +89,39 @@ def chat(model: str, messages: list):
 
     if not should_use_neo4j_tool(messages):
         print("NO NEO4J TOOL")
-        resp = groq_client.chat.completions.create(
-            model=model,
-            messages=[system_prompt] + messages,
-        )
-        return {"text": resp.choices[0].message.content, "tool_call": False}
+        try:
+            resp = groq_client.chat.completions.create(
+                model=model,
+                messages=[system_prompt] + messages,
+            )
+        except Exception as e:
+            print("CHAT CALL FAILED:", e)
+            return {"text": "I had trouble processing that — could you try again?", "tool_call": False}
 
+        text = resp.choices[0].message.content
+        if not text or not text.strip():
+            print("EMPTY RESPONSE FROM MODEL")
+            return {"text": "I'm not sure how to answer that — could you rephrase?", "tool_call": False}
+        return {"text": text, "tool_call": False}
+    
     print("USING MEDICAL TOOLS")
 
+    
     # ---------- Turn 1: force fetchSimilarQueries ----------
-    resp1 = groq_client.chat.completions.create(
-        model=model,
-        messages=[system_prompt] + messages,
-        tools=[rag_tool_groq],
-        tool_choice={"type": "function", "function": {"name": "fetchSimilarQueries"}},
-    )
-    rag_call = resp1.choices[0].message.tool_calls[0]
+    try:
+        resp1 = groq_client.chat.completions.create(
+            model=model,
+            messages=[system_prompt] + messages,
+            tools=[rag_tool_groq],
+            tool_choice={"type": "function", "function": {"name": "fetchSimilarQueries"}},
+        )
+        rag_call = resp1.choices[0].message.tool_calls[0]
+    except Exception as e:
+        print("RAG TOOL CALL FAILED:", e)
+        return {"text": "I had trouble processing that question — could you rephrase it?", "tool_call": False}
+
+
+    
     rag_args = json.loads(rag_call.function.arguments)
     query = rag_args["query"]
     print("FETCHING SIMILAR QUERIES:", query)
@@ -127,13 +153,19 @@ def chat(model: str, messages: list):
         },
     ]
 
-    resp2 = groq_client.chat.completions.create(
-        model=model,
-        messages=cypher_messages,
-        tools=[neo4j_tool_groq],
-        tool_choice={"type": "function", "function": {"name": "execute_neo4j_query"}},
-    )
-    cypher_call = resp2.choices[0].message.tool_calls[0]
+    try:
+        resp2 = groq_client.chat.completions.create(
+            model=model,
+            messages=cypher_messages,
+            tools=[neo4j_tool_groq],
+            tool_choice={"type": "function", "function": {"name": "execute_neo4j_query"}},
+        )
+        cypher_call = resp2.choices[0].message.tool_calls[0]
+    except Exception as e:
+        print("CYPHER GENERATION FAILED:", e)
+        return {"text": "I had trouble generating a query for that question — could you rephrase it?", "tool_call": False}
+
+    
     cypher_args = json.loads(cypher_call.function.arguments)
     cypher = cypher_args["cypher_query"]
     print("EXECUTING CYPHER:", cypher)
@@ -163,24 +195,46 @@ def chat(model: str, messages: list):
         {
             "role": "system",
             "content": """
-            You are given the output of a Neo4j query.
-            Use ONLY the information contained in the tool output.
-            Do NOT use your own medical knowledge.
-            Do NOT infer or add diseases, genes, explanations, or relationships not present in the data.
-            If the tool output is insufficient, say "The knowledge graph does not contain enough information."
-            """,
+                You are given the output of a Neo4j query.
+                Use ONLY the information contained in the tool output.
+                Do NOT use your own medical knowledge.
+
+                The tool output contains only factual associations (e.g., "exposure X is linked to disease Y").
+                It does NOT contain instructions, remediation methods, product recommendations, or any
+                guidance on HOW to avoid, treat, or manage anything.
+
+                You may state which items are associated with the condition, exactly as returned.
+                You must NOT invent HOW to avoid, reduce, or manage exposure to any item — no cleaning
+                tips, no protective equipment suggestions, no dietary substitutions, no "practical steps."
+                Example of what NOT to do: turning "Dust is linked to asthma" into "use a HEPA vacuum."
+                Example of what TO do: "The knowledge graph lists Dust as an exposure associated with
+                asthma. It does not provide guidance on how to reduce dust exposure."
+
+                Do NOT infer or add diseases, genes, explanations, or relationships not present in the data.
+                If the tool output is insufficient, say "The knowledge graph does not contain enough information."
+                .....
+                Present the answer as flowing prose in paragraph form, not as a bulleted or numbered list,
+                unless the user explicitly asks for a list.
+                """,
         }
     ] + messages + [
         {"role": "user", "content": f"Neo4j results:\n{json.dumps(results)}"},
     ]
 
-    follow_up = groq_client.chat.completions.create(
-        model=model,
-        messages=follow_up_messages,
-        temperature=0,
-        tool_choice="none",
-    )
-    final_text = follow_up.choices[0].message.content
+    try:
+        follow_up = groq_client.chat.completions.create(
+            model=model,
+            messages=follow_up_messages,
+            temperature=0,
+            tool_choice="none",
+        )
+        final_text = follow_up.choices[0].message.content
+    except Exception as e:
+        print("CYPHER GENERATION FAILED:", e)
+        if "429" in str(e) or "rate_limit" in str(e).lower():
+            return {"text": "The service has reached its usage limit for now — please try again later.", "tool_call": False}
+        return {"text": "I had trouble generating a query for that question — could you rephrase it?", "tool_call": False}
+        
     print("FINAL ANSWER:", final_text)
     print(f"Total time: {time.time() - start:.2f}s")
 
@@ -195,6 +249,11 @@ def get_models():
     
             {
                 "id": "llama-3.3-70b-versatile",
+                "object": "model",
+                "owned_by": "groq"
+            },
+            {
+                "id": "openai/gpt-oss-120b",
                 "object": "model",
                 "owned_by": "groq"
             }
