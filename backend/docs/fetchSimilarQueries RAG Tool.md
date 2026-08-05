@@ -28,8 +28,9 @@ The RAG index initially returned a `finding` field alongside `question` and `cyp
 
 **Fix:** Removed `finding` from `fetch_similar_queries()`'s return value in `rag_tool.py`.
  
-# before fix
+### Before fix
 ![finding leak before fix](images/rag_leak_before.png)
+### After fix
 ![finding removed after fix](images/rag_leak_fixed.png)
 
 ### 2. Second tool never called
@@ -37,6 +38,7 @@ With `tool_choice="auto"`, the model sometimes stopped after calling `fetchSimil
 
 **Fix:** Split the single completion into three forced-tool-choice completions, guaranteeing both tools fire in the correct order every time.
 
+### Before fix
 ![sequential tool calls in log](images/staged_tool_calls.png)
 
 ### 3. Routing missed real medical questions
@@ -44,7 +46,9 @@ A fixed keyword list (`medical_keywords = [...]`) failed to route questions like
 
 **Fix:** Replaced the keyword list with an LLM-based classifier call.
 
+### Before fix
 ![misrouted question before fix](images/router_before.png)
+### After fix
 ![correct routing after fix](images/router_after.png)
 
 ### 4. Fabricated advice layered on real graph facts
@@ -52,7 +56,9 @@ For questions asking "what lifestyle changes can help," the model correctly list
 
 **Fix:** Added explicit before/after examples to the final-answer system prompt distinguishing "reporting an association" from "inventing guidance."
 
+### Before fix
 ![fabricated advice before fix](images/advice_leak_before.png)
+### After fix
 ![grounded-only answer after fix](images/advice_leak_fixed.png)
 
 ---
@@ -76,7 +82,10 @@ Result:
 * `execute_neo4j_query` reliably invoked second, using the generated Cypher.
 * Final answers grounded strictly in Neo4j results, with explicit "not available in the knowledge graph" fallback when queries returned empty.
 
+### End-to-end successful run
 ![end-to-end successful run](images/pipeline_success.png)
+
+### OpenWebUI  final answer
 ![OpenWebUI rendered final answer](images/openwebui_result.png)
 
 ---
