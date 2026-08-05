@@ -90,9 +90,3 @@ Result:
 
 ---
 
-## Open Items (pending mentor input)
-
-1. **Multi-part questions** — a single question with two distinct sub-asks currently triggers only one Cypher query; the final answer may infer the unaddressed part from disease names rather than queried data. Needs a decision on whether sub-question decomposition is in scope.
-2. **Long result-list truncation** — large result sets (e.g. 80+ gene lists) are sometimes summarized by the LLM in the final answer without indicating omissions.
-
----
