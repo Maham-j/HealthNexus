@@ -1,7 +1,5 @@
 """Given a user's question, find the most similar questions from our Excel knowledge bank."""
-
 from pathlib import Path
-
 import faiss
 import numpy as np
 import pandas as pd
@@ -97,35 +95,48 @@ class RAGTool:
         return results
 
 
-rag_tool_groq = {
-    "type": "function",
-    "function": {
-        "name": "fetchSimilarQueries",
-        "description": (
-            "Retrieve only Cypher query examples from the FAISS knowledge base. "
-            "This tool does not contain medical answers or final findings. "
-            "Use it only to understand previous query patterns and generate a new Neo4j Cypher query. "
-            "Never use the returned examples as the final answer. "
-            "Call this function with exactly one argument named 'query'. "
-            "The query must be a short natural-language medical question, not Cypher. "
-            "Example: 'diseases related to psoriasis'."
-        ),
-        "parameters": {
-            "type": "object",
-            "properties": {
-                "query": {
-                    "type": "string",
-                    "description": (
-                        "Short natural-language question used to retrieve similar Cypher examples."
-                    )
-                }
-            },
-            "required": ["query"]
-        }
-    }
-}
-    
+FAISS_TOOL_DESCRIPTION = """
+<tool>
 
+    <purpose>
+        Retrieve similar Cypher query examples from the FAISS knowledge base.
+    </purpose>
+
+    <usage>
+
+        <input>
+            A short natural-language biomedical question, rephrased or generalized by you — do not copy the user's exact wording verbatim.
+        </input>
+
+        <behavior>
+            Retrieve similar questions and their corresponding Cypher queries.
+            Use the returned examples only to understand query patterns.
+        </behavior>
+
+    </usage>
+
+    <limitations>
+
+        <rule>
+            Never use the returned examples as medical evidence.
+        </rule>
+
+        <rule>
+            Never use the returned examples as the final answer.
+        </rule>
+
+        <rule>
+            Use them only to help generate a new Cypher query.
+        </rule>
+
+    </limitations>
+
+    <output>
+        Return similar questions together with their Cypher queries.
+    </output>
+
+</tool>
+"""
 
 rag_tool = None
 
