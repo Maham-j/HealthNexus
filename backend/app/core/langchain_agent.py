@@ -196,4 +196,34 @@ def ask_agent(question: str, chat_history: list | None = None):
     return thinking_block + final_answer
 
 
+
+# provide summary of chain of thoughts instead of hardcoded
+# def ask_agent_llm_summary(question: str, chat_history: list | None = None):
+#     response = agent_executor.invoke(
+#         {
+#             "input": question,
+#             "chat_history": chat_history or [],
+#         }
+#     )
+#     steps = response.get("intermediate_steps", [])
+#     final_answer = response["output"]
+
+#     if not steps:
+#         return final_answer
+
+#     steps_text = "\n".join(
+#         f"Tool: {action.tool}, Input: {action.tool_input}, Result: {str(observation)[:200]}"
+#         for action, observation in steps
+#     )
+
+#     summary_prompt = (
+#         f"Summarize the following reasoning steps in 2-3 short sentences, "
+#         f"as if explaining your own thought process:\n\n{steps_text}"
+#     )
+#     summary_response = llm.invoke(summary_prompt)
+
+#     thinking_block = f"<think>\n{summary_response.content}\n</think>\n\n"
+#     return thinking_block + final_answer
+
+
     
