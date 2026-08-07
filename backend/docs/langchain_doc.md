@@ -42,9 +42,8 @@ token limit and failing the request outright.
 (e.g. 100 rows) and a `note` field tells the model how many rows exist in
 total, so it can say "showing X of Y" instead of implying completeness.
 
-```markdown
 ![413 token limit error in terminal](images/token_limit_error_before.png)
-```
+
 
 ---
 
@@ -73,10 +72,10 @@ falling through to the old code.
 `should_use_neo4j_tool()`. Routed everything through `ask_agent()`
 (`AgentExecutor`), letting the LLM choose its own tools autonomously.
 
-```markdown
-![before: forced tool_choice in raw Groq calls](images/manual_tool_forcing_before.png)
+![before: forced tool_choice in raw Groq calls](images/manual_tool_forcing_before1.png)
+![before: forced tool_choice in raw Groq calls](images/manual_tool_forcing_before2.png)
 ![after: AgentExecutor choosing tools on its own](images/agent_tool_selection_after.png)
-```
+
 
 ---
 
@@ -91,9 +90,7 @@ startup cost.
 **Fix:** `langchain_tools.py` now imports the already-built `description`
 instead of rebuilding it.
 
-```markdown
 ![duplicate schema build in startup log](images/duplicate_schema_build_before.png)
-```
 
 ---
 
@@ -107,10 +104,8 @@ through the tool-bound agent, which sometimes tried to call a nonexistent
 **Fix:** Added `is_metadata_request()` to detect these calls and route them
 straight to the plain LLM (no tools bound), bypassing the agent entirely.
 
-```markdown
 ![tool call validation error on metadata request](images/metadata_tool_error_before.png)
 ![metadata request skipping the agent successfully](images/metadata_skip_after.png)
-```
 
 ---
 
@@ -140,10 +135,8 @@ discarded.
 **Fix:** Removed the duplicate prompt block; built the agent from the single
 correct `ChatPromptTemplate` that includes `{chat_history}`.
 
-```markdown
 ![agent failing to resolve "those" without history](images/no_memory_before.png)
 ![follow-up question correctly resolved using history](images/memory_fixed_after.png)
-```
 
 ---
 
@@ -161,10 +154,8 @@ mechanism/attribute not explicitly present in tool output, forbid inventing
 disease/syndrome names, and require explicit uncertainty when a hereditary
 form isn't well-established.
 
-```markdown
 ![fabricated inheritance mechanism for every row](images/fabrication_before.png)
 ![corrected answer with explicit uncertainty](images/fabrication_fixed_after.png)
-```
 
 ---
 
@@ -178,9 +169,8 @@ didn't clearly separate which claim came from which source.
 of a mixed answer to be labeled separately, with a final citations section
 naming both sources.
 
-```markdown
 ![clearly separated Neo4j vs general-knowledge sections](images/mixed_sources_after.png)
-```
+
 
 ---
 
@@ -218,9 +208,9 @@ dict output — readable as a log, not as reasoning.
 built from real data (tool name, result count) rather than model-generated
 prose, to avoid introducing new fabrication risk into the thinking display.
 
-```markdown
-![thought block after: plain-language summary](images/think_dropdown_after.png)
-```
+![thought block after: plain-language summary](images/think_dropdown_after1.png)
+![thought block after: plain-language summary](images/think_dropdown_after2.png)
+
 
 ---
 
@@ -268,9 +258,8 @@ placeholder used for follow-up questions.
 conversation" or "summarize this chat" produces an accurate summary of all
 prior turns, confirming chat memory works beyond single-hop follow-ups.
 
-​```markdown
 ![agent summarizing full multi-turn conversation using memory](images/chat_memory_conservation.png)
-​```
+
 
 ## Cleanup
 
