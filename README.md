@@ -302,7 +302,7 @@ summarization tool needed.
 
 ## Project Documentation
 
-See [`docs/HealthNexus_LangChain_Migration.md`](docs/HealthNexus_LangChain_Migration.md)
+See [`docs/HealthNexus_LangChain_Migration.md`](docs/)
 for the detailed history of issues found and fixed during the migration
 from a manual, hardcoded tool-calling pipeline to the current LangChain
 agent — including screenshots of before/after behavior.
