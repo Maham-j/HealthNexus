@@ -3,20 +3,36 @@ from langchain.agents import create_tool_calling_agent, AgentExecutor  # Create 
 from langchain_core.prompts import ChatPromptTemplate   # Build structured prompts
 from app.core.langchain_tools import tools   # Import all LangChain tools (Neo4j + FAISS)
 from langchain_core.messages import HumanMessage, AIMessage
+from functools import lru_cache
 from dotenv import load_dotenv
 import os
-
 
 load_dotenv()
 
 
-# Initialize GPT-OSS 120B model through Groq
-llm = ChatGroq(
-    model="openai/gpt-oss-120b",
-    api_key=os.getenv("GROQ_API_KEY"),
-    temperature=0,
-    model_kwargs={"reasoning_effort": "medium"},
-)
+from functools import lru_cache
+
+@lru_cache(maxsize=4)
+def get_agent_executor(model_name: str):
+    extra_kwargs = {}
+    if model_name == "openai/gpt-oss-120b":
+        extra_kwargs["model_kwargs"] = {"reasoning_effort": "medium"}
+
+    llm = ChatGroq(
+        model=model_name,
+        api_key=os.getenv("GROQ_API_KEY"),
+        temperature=0,
+        **extra_kwargs,
+    )
+    agent = create_tool_calling_agent(llm=llm, tools=tools, prompt=prompt)
+    agent_executor = AgentExecutor(
+        agent=agent,
+        tools=tools,
+        verbose=True,
+        return_intermediate_steps=True,
+        max_iterations=6,
+    )
+    return agent_executor, llm
 
 
 # XML system prompt that defines the agent's behavior and rules
@@ -113,24 +129,6 @@ prompt = ChatPromptTemplate.from_messages(
 )
 
 
-# Create a tool-calling agent
-agent = create_tool_calling_agent(
-    llm=llm,
-    tools=tools,
-    prompt=prompt,
-)
-
-
-# Execute the agent and its selected tools
-agent_executor = AgentExecutor(
-    agent=agent,
-    tools=tools,
-    verbose=True,
-    return_intermediate_steps=True,
-    max_iterations=6,
-)
-
-
 # Function to send a question to the agent
 def describe_step(action, observation):
     tool_icons = {
@@ -158,7 +156,9 @@ def describe_step(action, observation):
     return f"{action_phrase} — {result_phrase}"
 
 
-def ask_agent(question: str, chat_history: list | None = None):
+def ask_agent(question: str, model_name: str, chat_history: list | None = None):
+    agent_executor, llm = get_agent_executor(model_name)
+    print("ACTUALLY USING MODEL:", llm.model_name)
     response = agent_executor.invoke(
         {
             "input": question,

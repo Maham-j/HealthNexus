@@ -28,6 +28,13 @@ Given a biomedical question, the agent:
 Groq (`openai/gpt-oss-120b`), Neo4j (PrimeKG), FAISS + sentence-transformers
 (RAG over a manual Cypher example bank), OpenWebUI as the frontend.
 
+**Model selection from OpenWebUI**
+
+Also supports switching models — the model is now built per-request from what OpenWebUI sends (via `get_agent_executor(model_name)`), instead of hardcoded to `gpt-oss-120b`. Tested switching models in the dropdown and confirmed the response actually comes from the selected one.
+![model_switch](images/model_switch1.png)
+![model_switch](images/model_switch2.png)
+![model_switch](images/model_switch3.png)
+
 ---
 
 ## Issues Found & Fixed
