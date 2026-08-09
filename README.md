@@ -67,8 +67,10 @@ healthnexus/
 ├── docs/
 │   └── HealthNexus_LangChain_Migration.md   # issues found & fixed, with screenshots
 ├── images/                        # screenshots referenced in docs
-└── scripts/
-    └── check_neo4j_connection.py
+├── scripts/
+│    └── check_neo4j_connection.py
+└── notebooks/
+    └── PrimeKG_EDA.ipynb
 ```
 
 ---
