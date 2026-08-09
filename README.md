@@ -34,6 +34,7 @@ Given a biomedical question, the agent:
 ---
 
 ## Project Structure
+```
 healthnexus/
 ├── .env
 ├── .gitignore
@@ -67,7 +68,7 @@ healthnexus/
 ├── images/                        # screenshots referenced in docs
 └── scripts/
     └── check_neo4j_connection.py
-
+```
 
 ## Architecture
 
