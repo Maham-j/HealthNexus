@@ -165,6 +165,20 @@ than shown, preventing token-limit crashes on large result sets.
 
 ## Setup
 
+### 0. Dataset
+This project uses [PrimeKG](https://github.com/mims-harvard/PrimeKG)
+(Harvard, Zitnik lab) — a biomedical knowledge graph integrating 20 public
+resources into over 17,000 diseases and 4 million relationships across ten
+biological scales, including disease-drug indications, contraindications,
+off-label uses, and symptom/phenotype connections. Free and open.
+
+Download the **nodes** and **edges** files from the Harvard Dataverse
+dataset page (DOI: [`10.7910/DVN/IXA7BM`](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/IXA7BM)).
+
+Load them into your Neo4j instance — see
+[github.com/mims-harvard/PrimeKG](https://github.com/mims-harvard/PrimeKG)
+for loading tutorials and source code.
+
 ### 1. Neo4j
 Load the PrimeKG dataset into a running Neo4j instance. Set the connection
 details in `.env`:
