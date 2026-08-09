@@ -34,6 +34,7 @@ Given a biomedical question, the agent:
 ---
 
 ## Project Structure
+
 ```
 healthnexus/
 ├── .env
@@ -69,6 +70,8 @@ healthnexus/
 └── scripts/
     └── check_neo4j_connection.py
 ```
+
+---
 
 ## Architecture
 
@@ -115,6 +118,11 @@ orchestration lives in the LangChain agent.
 - **Knowledge graph:** Neo4j, loaded with PrimeKG
 - **Retrieval:** FAISS + `sentence-transformers` over a manually curated
   Excel bank of question/Cypher/result/finding examples
+- **Authentication:** JWT (via `passlib`/bcrypt for password hashing),
+  protecting the raw query endpoint
+- **Model discovery:** Groq Python SDK (`groq` package) — used directly in
+  `get_models()` to dynamically fetch available chat models, separate from
+  LangChain's `ChatGroq` wrapper used for the agent itself
 - **Frontend:** OpenWebUI
 
 ---
@@ -161,10 +169,10 @@ than shown, preventing token-limit crashes on large result sets.
 Load the PrimeKG dataset into a running Neo4j instance. Set the connection
 details in `.env`:
 ```
-NEO4J_URI=bolt://localhost:7687
-NEO4J_USERNAME=neo4j
+NEO4J_URI=your_neo4j_uri
+NEO4J_USERNAME=your_username
 NEO4J_PASSWORD=your_password
-NEO4J_DATABASE=neo4j
+NEO4J_DATABASE=your_database
 ```
 
 ### 2. Groq API key
@@ -197,6 +205,39 @@ endpoint:
 http://host.docker.internal:8000/v1
 ```
 Refresh models — your Groq-backed models should appear in the dropdown.
+
+---
+
+## How to Run
+
+Once setup is complete (Neo4j running, `.env` configured, dependencies
+installed):
+
+1. **Start the backend:**
+   ```
+   make dev
+   ```
+   Wait for `Application startup complete` in the terminal — this means
+   Neo4j's schema description and the FAISS RAG index have both loaded.
+
+2. **Start OpenWebUI** (if not already running):
+   ```
+   docker start open-webui
+   ```
+   Or, if it's not created yet:
+   ```
+   docker run -d -p 3000:8080 --name open-webui -v open-webui:/app/backend/data ghcr.io/open-webui/open-webui:main
+   ```
+
+3. **Open OpenWebUI** in your browser: `http://localhost:3000`
+
+4. **Pick a model** from the dropdown (any Groq chat model configured in
+   your backend) and start asking biomedical questions.
+
+To stop the backend, `Ctrl+C` in its terminal. To stop OpenWebUI:
+```
+docker stop open-webui
+```
 
 ---
 
