@@ -35,6 +35,13 @@ Also supports switching models — the model is now built per-request from what 
 ![model_switch](images/model_switch2.png)
 ![model_switch](images/model_switch3.png)
 
+
+**Chain-of-Thought Display**
+
+Also supports showing a collapsible chain-of-thought in OpenWebUI — tool calls are formatted as markdown (tool name, Cypher query in a fenced code block, result count) instead of raw text.
+
+![chain-of-thought showing formatted tool call](images/cot.png)
+
 ---
 
 ## Issues Found & Fixed
@@ -87,7 +94,7 @@ falling through to the old code.
 ---
 
 
-### 5. Duplicate Tool-Description Build (Startup Delay)
+### 4. Duplicate Tool-Description Build (Startup Delay)
 
 **Issue:** `build_tool_description()` (which queries Neo4j for schema:
 properties, node types, relationship types) was called twice at import time —
@@ -101,7 +108,7 @@ instead of rebuilding it.
 
 ---
 
-### 6. OpenWebUI Metadata Requests Breaking the Agent
+### 5. OpenWebUI Metadata Requests Breaking the Agent
 
 **Issue:** OpenWebUI's internal housekeeping calls (title generation,
 follow-up suggestions, tag generation — all prefixed `### Task:`) were routed
@@ -116,7 +123,7 @@ straight to the plain LLM (no tools bound), bypassing the agent entirely.
 
 ---
 
-### 7. RAG Model Cold-Start Mid-Conversation
+### 6. RAG Model Cold-Start Mid-Conversation
 
 **Issue:** The FAISS/sentence-transformer model loaded lazily on the first
 real chat request (~12s delay), landing on whichever user happened to ask
@@ -127,7 +134,7 @@ moving the cost to server startup instead of a live request.
 
 ---
 
-### 8. Broken Multi-Turn Memory
+### 7. Broken Multi-Turn Memory
 
 **Issue:** Follow-up questions like "which of those are hereditary?" failed
 because `ask_agent()` only ever received the latest message — no
@@ -147,7 +154,7 @@ correct `ChatPromptTemplate` that includes `{chat_history}`.
 
 ---
 
-### 9. Fabricated Biomedical Claims
+### 8. Fabricated Biomedical Claims
 
 **Issue:** When asked "which of those are hereditary," the model invented a
 confident inheritance mechanism ("Autosomal-dominant TP53 germ-line
@@ -166,7 +173,7 @@ form isn't well-established.
 
 ---
 
-### 10. Mixed Sources Not Labeled Separately
+### 9. Mixed Sources Not Labeled Separately
 
 **Issue:** Answers blending Neo4j data and general knowledge (e.g. a disease
 list from the graph + a hereditary classification from training knowledge)
@@ -181,7 +188,7 @@ naming both sources.
 
 ---
 
-### 11. Missing-Information Fallback Refusal
+### 10. Missing-Information Fallback Refusal
 
 **Issue:** For questions the graph couldn't answer at all (e.g. "how is
 aspirin's mechanism of action"), the model sometimes stopped at "the graph
@@ -192,7 +199,7 @@ knowledge (clearly labeled) instead of stopping short.
 
 ---
 
-### 12. Chain-of-Thought Not Visible in OpenWebUI
+### 11. Chain-of-Thought Not Visible in OpenWebUI
 
 **Issue:** No visibility into what the agent was doing (which tools, how many
 calls) — reasoning only appeared in the terminal via `verbose=True`.
@@ -205,7 +212,7 @@ responses don't get parsed for `<think>` tags.
 
 ---
 
-### 13. Chain-of-Thought Content Too Technical
+### 12. Chain-of-Thought Content Too Technical
 
 **Issue:** Initial `<think>` content dumped raw Cypher queries and Python
 dict output — readable as a log, not as reasoning.
@@ -221,7 +228,7 @@ prose, to avoid introducing new fabrication risk into the thinking display.
 
 ---
 
-### 14. No-Tool-Call Turns Had No Thought Block
+### 13. No-Tool-Call Turns Had No Thought Block
 
 **Issue:** When the agent answered purely from conversation history/general
 knowledge with zero tool calls, no `<think>` block was emitted at all.
@@ -230,7 +237,7 @@ knowledge with zero tool calls, no `<think>` block was emitted at all.
 
 ---
 
-### 15. Corrupted FAISS Example Bank Rows
+### 14. Corrupted FAISS Example Bank Rows
 
 **Issue:** Newly added example rows in the Excel knowledge bank had corrupted
 `Neo4J Response` cells (broken JSON, embedded row numbers, typo'd property
@@ -242,7 +249,7 @@ format.
 
 ---
 
-### 16. Fragile Keyword-Based Filtering
+### 15. Fragile Keyword-Based Filtering
 
 **Issue:** Cypher queries filtering by substrings like `CONTAINS 'syndrome'`
 or `CONTAINS 'familial'` were treated as reliable classification (e.g. "is
@@ -254,7 +261,7 @@ when presenting such results.
 
 ---
 
-### 17. Chat Summarization via Conversation Memory
+### 16. Chat Summarization via Conversation Memory
 
 **Capability:** Since multi-turn `chat_history` was fixed (issue #8), the
 agent can summarize the full conversation on request without any new tool —

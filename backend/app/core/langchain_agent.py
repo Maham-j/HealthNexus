@@ -129,13 +129,25 @@ prompt = ChatPromptTemplate.from_messages(
 )
 
 
+def format_tool_call(action) -> str:
+    tool_name = action.tool
+    tool_input = action.tool_input
+
+    if tool_name == "run_neo4j_query":
+        cypher = tool_input.get("cypher_query", "")
+        return f"**🔍 `{tool_name}`**\n```cypher\n{cypher}\n```"
+
+    if tool_name == "fetch_similar_queries":
+        query = tool_input.get("query", "")
+        return f"**🔍 `{tool_name}`**\n> {query}"
+
+    return f"**🛠️ `{tool_name}`**\n```\n{tool_input}\n```"
+
+
 # Function to send a question to the agent
+
 def describe_step(action, observation):
-    tool_icons = {
-        "run_neo4j_query": "🔍 Searched the medical knowledge graph",
-        "fetch_similar_queries": "🔍 Looked for similar past questions to help form a query",
-    }
-    action_phrase = tool_icons.get(action.tool, f"🛠️ Used the `{action.tool}` tool")
+    formatted_call = format_tool_call(action)
 
     if isinstance(observation, dict) and "results" in observation:
         count = len(observation["results"])
@@ -145,15 +157,15 @@ def describe_step(action, observation):
         count = None
 
     if count == 0:
-        result_phrase = "found nothing relevant."
+        result_phrase = "→ returned nothing."
     elif count == 1:
-        result_phrase = "found 1 relevant result."
+        result_phrase = "→ returned 1 result."
     elif count is not None:
-        result_phrase = f"found {count} results."
+        result_phrase = f"→ returned {count} results."
     else:
-        result_phrase = "got a response back."
+        result_phrase = "→ got a response back."
 
-    return f"{action_phrase} — {result_phrase}"
+    return f"{formatted_call}\n{result_phrase}"
 
 
 def ask_agent(question: str, model_name: str, chat_history: list | None = None):
@@ -173,7 +185,7 @@ def ask_agent(question: str, model_name: str, chat_history: list | None = None):
         return "<think>\n⌛ Answered directly from general knowledge — no knowledge graph lookup needed\n✅ Done\n</think>\n\n" + final_answer
 
     tools_called = [action.tool for action, _ in steps]
-    summary = "🧠 Used: " + ", ".join(dict.fromkeys(tools_called))
+    summary = " Tools Used: " + ", ".join(dict.fromkeys(tools_called))
 
     thinking_lines = [summary, ""]
     for action, observation in steps:
