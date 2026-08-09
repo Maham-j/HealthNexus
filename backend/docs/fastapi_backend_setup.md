@@ -234,12 +234,12 @@ The following tests were performed successfully:
 * **GET `/v1/models`** – Verified that the FastAPI backend exposes the available Gemini model.
 
 
-![response in Postman](images/get.png)
+![response in Postman](images/Get.png)
   
 
 * **POST `/v1/chat/completions`** – Verified successful communication between FastAPI and Gemini using the OpenAI-compatible endpoint.
 
-![response in Postman](images/post.png)
+![response in Postman](images/Post.png)
 
 
 * **OpenWebUI Chat** – Verified that OpenWebUI communicates with the FastAPI backend and receives **streaming responses** from Gemini.
