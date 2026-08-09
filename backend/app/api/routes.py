@@ -28,6 +28,3 @@ def run_raw_cypher(request: RawCypherRequest, current_user: str = Depends(get_cu
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-
-# TODO: /ask/cypher
-# TODO: /ask/graphrag
