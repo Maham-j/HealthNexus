@@ -33,46 +33,69 @@ Given a biomedical question, the agent:
 
 ---
 
+> **Note:** This repo includes a full clone of OpenWebUI's source under
+> `frontend/` for anyone who prefers running it from source. This project
+> itself was built and tested using OpenWebUI via Docker (see Setup below) —
+> the `frontend/` folder isn't required and wasn't used during development.
+
+---
+
 ## Project Structure
 
 ```
 healthnexus/
-├── .env
 ├── .gitignore
-├── Makefile
-├── requirements.txt
 ├── README.md
-├── app/
-│   ├── __init__.py
-│   ├── main.py                    # FastAPI entrypoint
-│   ├── config.py                  # loads .env, settings
-│   ├── api/
+├── backend/
+│   ├── .env
+│   ├── .env.example
+│   ├── .gitignore
+│   ├── .gitignore-python
+│   ├── Makefile
+│   ├── pyproject.toml
+│   ├── requirements.txt
+│   ├── venv/
+│   ├── app/
 │   │   ├── __init__.py
-│   │   ├── openai_routes.py       # /v1/models, /v1/chat/completions (OpenWebUI-facing)
-│   │   ├── auth_routes.py         # /auth/login (JWT)
-│   │   └── routes.py              # /health, /query/raw (JWT-protected)
-│   ├── core/
-│   │   ├── __init__.py
-│   │   ├── neo4j_connector.py     # Neo4jConnector — wraps the neo4j driver
-│   │   ├── neo4j_tool.py          # Neo4j Cypher execution + schema description
-│   │   ├── rag_tool.py            # FAISS RAG over the Excel example bank
-│   │   ├── langchain_tools.py     # LangChain @tool wrappers (Neo4j + FAISS)
-│   │   ├── langchain_agent.py     # SYSTEM_PROMPT, AgentExecutor, ask_agent()
-│   │   └── chat_service.py        # chat(), get_models(), metadata bypass
-│   └── models/
-│       ├── __init__.py
-│       └── schemas.py             # ChatCompletionRequest and related models
-├── data/
-│   └── PrimeKG_manual_databank.xlsx   # 30+ question/Cypher/response/finding examples
-├── docs/
-│   └── HealthNexus_LangChain_Migration.md   # issues found & fixed, with screenshots
-├── images/                        # screenshots referenced in docs
-├── scripts/
-│    └── check_neo4j_connection.py
+│   │   ├── main.py                # FastAPI entrypoint
+│   │   ├── config.py              # loads .env, settings
+│   │   ├── api/
+│   │   │   ├── __init__.py
+│   │   │   ├── openai_routes.py   # /v1/models, /v1/chat/completions
+│   │   │   ├── auth_routes.py     # /auth/login (JWT)
+│   │   │   └── routes.py          # /health, /query/raw (JWT-protected)
+│   │   ├── core/
+│   │   │   ├── __init__.py
+│   │   │   ├── auth.py            # password hashing, JWT create/verify
+│   │   │   ├── neo4j_connector.py # Neo4jConnector — wraps the neo4j driver
+│   │   │   ├── neo4j_tool.py      # Cypher execution + schema description
+│   │   │   ├── rag_tool.py        # FAISS RAG over the Excel example bank
+│   │   │   ├── langchain_tools.py # LangChain @tool wrappers (Neo4j + FAISS)
+│   │   │   ├── langchain_agent.py # SYSTEM_PROMPT, AgentExecutor, ask_agent()
+│   │   │   └── chat_service.py    # chat(), get_models(), metadata bypass
+│   │   ├── data/
+│   │   │   └── PrimeKG_manual_databank.xlsx   # 30+ Q&A example bank
+│   │   └── models/
+│   │       ├── __init__.py
+│   │       ├── schemas.py         # ChatCompletionRequest and related models
+│   │       └── auth_schemas.py    # login request/response models
+│   ├── docs/
+│   │   ├── fastapi_backend_setup.md
+│   │   ├── fetchSimilarQueries RAG Tool.md
+│   │   ├── git_workflow.md
+│   │   ├── installation_and_setup.md
+│   │   ├── langchain_doc.md
+│   │   ├── neo4j_tool_calling.md
+│   │   ├── openwebui_setup.md
+│   │   └── images/
+│   └── scripts/
+│       └── generate_password_hash.py
+├── frontend/                      # OpenWebUI source clone (optional —
+│   └── ...                        #   project was built and run via Docker;
+│                                   #   source unused)
 └── notebooks/
     └── PrimeKG_EDA.ipynb
 ```
-
 ---
 
 ## Architecture
@@ -302,7 +325,21 @@ summarization tool needed.
 
 ## Project Documentation
 
-See [`backend/docs/`](backend/docs/)
-for the detailed history of issues found and fixed during the migration
-from a manual, hardcoded tool-calling pipeline to the current LangChain
-agent — including screenshots of before/after behavior.
+For detailed history of issues found and fixed during the project, see
+[`backend/docs/`](backend/docs/).
+
+---
+
+## Author
+
+Built by **Maham** as part of internship project.
+
+## License
+
+This project is for educational/portfolio purposes. PrimeKG is used under
+its own open license — see [github.com/mims-harvard/PrimeKG](https://github.com/mims-harvard/PrimeKG)
+for dataset licensing terms.
+
+---
+
+*Built with curiosity, a lot of debugging, and way too many terminal logs.*
