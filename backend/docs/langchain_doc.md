@@ -275,6 +275,16 @@ prior turns, confirming chat memory works beyond single-hop follow-ups.
 ![agent summarizing full multi-turn conversation using memory](images/chat_memory_conservation.png)
 
 
+### 17. Fix: node_type mismatch causing silent empty results
+- Added explicit rule in schema description to copy node_type values exactly (fixes 'gene' vs 'gene/protein' mismatch)
+- Added validate_node_types() in neo4j_tool.py — checks node_type literals in generated Cypher against real graph values before executing; returns error dict if invalid so agent can retry
+
+### 18. Fix: false "based on graph" claims when Neo4j returns empty
+- Added neo4j_calls_all_empty() in agent.py — inspects tool observations directly instead of trusting LLM's self-report
+- ask_agent() now injects an explicit disclosure note when all Neo4j calls returned nothing but the answer still claims graph-sourced
+- describe_step() updated to surface validation errors in the <think> trace instead of showing "got a response back"
+
+
 ## Cleanup
 
 - Removed dead code: `neo4j_tool_groq` and `rag_tool_groq` (unused

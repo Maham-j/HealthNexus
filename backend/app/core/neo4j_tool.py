@@ -3,6 +3,7 @@ and executes Cypher queries against the Neo4j database.
 """
 from app.core.neo4j_connector import neo4j_connector
 import time
+import re
 
 
 def get_node_types():
@@ -106,6 +107,7 @@ def build_tool_description():
                     <rule>Generate only read-only Cypher queries.</rule>
                     <rule>Prefer adding LIMIT 100 in Cypher queries that could match many rows, especially broad disease/gene relationship lookups.</rule>
                     <rule>When filtering by keyword in a name (e.g. CONTAINS 'familial', 'hereditary', 'syndrome', 'susceptibility'), treat this as a weak text-matching heuristic, not a confirmed classification — state this limitation explicitly when presenting such results.</rule>
+                    <rule>When filtering by node_type, copy the value EXACTLY as it appears in <node_types> above, including slashes or spaces (e.g. use 'gene/protein', not 'gene' or 'protein'). Never guess or abbreviate a node_type string.</rule>
                 </cypher_rules>
 
             </knowledge_graph>
@@ -118,13 +120,36 @@ description = build_tool_description()
 print(f"Tool description built in {time.time() - start:.2f}s")
 
 
+_VALID_NODE_TYPES = None  # cache
+
+def get_valid_node_types():
+    global _VALID_NODE_TYPES
+    if _VALID_NODE_TYPES is None:
+        _VALID_NODE_TYPES = set(get_node_types())
+    return _VALID_NODE_TYPES
+
+def validate_node_types(cypher_query: str):
+    valid_types = get_valid_node_types()
+    used = re.findall(r"node_type\s*[:=]\s*['\"]([^'\"]+)['\"]", cypher_query)
+    invalid = [t for t in used if t not in valid_types]
+    if invalid:
+        return (
+            f"Invalid node_type value(s): {invalid}. "
+            f"Valid values are: {sorted(valid_types)}. "
+            f"Regenerate the query using an exact match from this list."
+        )
+    return None
+
 def execute_neo4j_query(cypher_query: str, max_results: int = 100):
     """
-    Executes a Cypher query against the Neo4j database.
-    Truncates results so oversized result sets can't blow the LLM's token budget.
-    """
-    results = neo4j_connector.run_query(cypher_query)
+        Executes a Cypher query against the Neo4j database.
+        Truncates results so oversized result sets can't blow the LLM's token budget.
+        """
+    error = validate_node_types(cypher_query)
+    if error:
+        return {"error": error}
 
+    results = neo4j_connector.run_query(cypher_query)
     if len(results) > max_results:
         truncated = results[:max_results]
         return {
@@ -132,8 +157,8 @@ def execute_neo4j_query(cypher_query: str, max_results: int = 100):
             "note": f"Showing {max_results} of {len(results)} total results. "
                     f"The query matched more rows than shown here.",
         }
-
     return results
+
 
 if __name__ == "__main__":
     print(description)

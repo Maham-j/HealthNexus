@@ -149,23 +149,37 @@ def format_tool_call(action) -> str:
 def describe_step(action, observation):
     formatted_call = format_tool_call(action)
 
-    if isinstance(observation, dict) and "results" in observation:
+    if isinstance(observation, dict) and "error" in observation:
+        result_phrase = f"→ error: {observation['error'][:80]}..."
+    elif isinstance(observation, dict) and "results" in observation:
         count = len(observation["results"])
+        result_phrase = f"→ returned {count} results." if count != 0 else "→ returned nothing."
     elif isinstance(observation, list):
         count = len(observation)
-    else:
-        count = None
-
-    if count == 0:
-        result_phrase = "→ returned nothing."
-    elif count == 1:
-        result_phrase = "→ returned 1 result."
-    elif count is not None:
-        result_phrase = f"→ returned {count} results."
+        result_phrase = f"→ returned {count} results." if count != 0 else "→ returned nothing."
     else:
         result_phrase = "→ got a response back."
 
     return f"{formatted_call}\n{result_phrase}"
+
+
+def neo4j_calls_all_empty(steps) -> tuple[bool, bool]:
+    neo4j_results = []
+    for action, observation in steps:
+        if action.tool != "run_neo4j_query":
+            continue
+        if isinstance(observation, dict) and "error" in observation:
+            neo4j_results.append(True)
+        elif isinstance(observation, dict) and "results" in observation:
+            neo4j_results.append(len(observation["results"]) == 0)
+        elif isinstance(observation, list):
+            neo4j_results.append(len(observation) == 0)
+        else:
+            neo4j_results.append(False)
+
+    if not neo4j_results:
+        return False, False
+    return True, all(neo4j_results)
 
 
 def ask_agent(question: str, model_name: str, chat_history: list | None = None):
@@ -182,7 +196,7 @@ def ask_agent(question: str, model_name: str, chat_history: list | None = None):
     final_answer = response["output"]
 
     if not steps:
-        return "<think>\n⌛ Answered directly from general knowledge — no knowledge graph lookup needed\n✅ Done\n</think>\n\n" + final_answer
+        return "<think>\n⌛ Answered directly from general knowledge — no knowledge graph lookup needed\n✔ Done\n</think>\n\n" + final_answer
 
     tools_called = [action.tool for action, _ in steps]
     summary = " Tools Used: " + ", ".join(dict.fromkeys(tools_called))
@@ -190,7 +204,19 @@ def ask_agent(question: str, model_name: str, chat_history: list | None = None):
     thinking_lines = [summary, ""]
     for action, observation in steps:
         thinking_lines.append(describe_step(action, observation))
-        
+
+    any_neo4j, all_empty = neo4j_calls_all_empty(steps)
+
+    # Ground-truth check: did Neo4j actually return anything?
+    if any_neo4j and all_empty:
+        claims_graph_source = "neo4j" in final_answer.lower() or "knowledge graph" in final_answer.lower()
+        if claims_graph_source and "no results" not in final_answer.lower() and "not available" not in final_answer.lower():
+            final_answer = (
+                "**Note: the knowledge graph returned no data for this query.** "
+                "The answer below is based on general medical knowledge, not verified graph data.\n\n"
+                + final_answer
+            )
+
     answer_lower = final_answer.lower()
     used_general_knowledge = (
         "general knowledge" in answer_lower
@@ -198,15 +224,15 @@ def ask_agent(question: str, model_name: str, chat_history: list | None = None):
     )
 
     thinking_lines.append("")
-    if used_general_knowledge:
+    if any_neo4j and all_empty:
+        thinking_lines.append("⌛  Graph returned no data for this query — answer forced to disclose fallback")
+    elif used_general_knowledge:
         thinking_lines.append("⌛  Graph data was insufficient — filled gaps using general medical knowledge")
     thinking_lines.append("⌛  Building the summary")
     thinking_lines.append("✔ Done")
 
-
     thinking_block = "<think>\n" + "\n".join(thinking_lines) + "\n</think>\n\n"
     return thinking_block + final_answer
-
 
 
 # provide summary of chain of thoughts instead of hardcoded

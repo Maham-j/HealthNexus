@@ -24,5 +24,6 @@ Thumbs.db
 *.log
 
 # Data (don't commit large dataset files)
+data/
 *.csv
 *.tsv
