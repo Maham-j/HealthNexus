@@ -326,7 +326,22 @@ summarization tool needed.
 ## Project Documentation
 
 For detailed history of issues found and fixed during the project, see
-[`backend/docs/`](backend/docs/).
+- [`installation_and_setup.md`](backend/docs/installation_and_setup.md) —
+  Full installation and setup guide
+- [`git_workflow.md`](backend/docs/git_workflow.md) —
+  Git workflow and commit conventions
+- [`fastapi_backend_setup.md`](backend/docs/fastapi_backend_setup.md) —
+  FastAPI backend setup and structure
+- [`openwebui_setup.md`](backend/docs/openwebui_setup.md) —
+  OpenWebUI setup and connection to the backend
+- [`neo4j_tool_calling.md`](backend/docs/neo4j_tool_calling.md) —
+  Neo4j Cypher tool registration and calling
+- [`fetchSimilarQueries RAG Tool.md`](backend/docs/fetchSimilarQueries%20RAG%20Tool.md) —
+  FAISS-based RAG tool for similar query retrieval
+- [`langchain_doc.md`](backend/docs/langchain_doc.md) —
+  Migration from a manual, hardcoded tool-calling pipeline to the current
+  LangChain agent, including issues found and fixed with before/after
+  screenshots
 
 ---
 
