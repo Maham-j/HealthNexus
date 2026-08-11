@@ -345,6 +345,18 @@ For detailed history of issues found and fixed during the project, see
 
 ---
 
+## References & Further Reading
+
+- [PrimeKG](https://github.com/mims-harvard/PrimeKG) — dataset source and loading tutorials
+- [Neo4j Documentation](https://neo4j.com/docs/) — graph database & Cypher
+- [LangChain Documentation](https://python.langchain.com/) — agent and tool-calling framework
+- [Groq API Documentation](https://console.groq.com/docs) — LLM inference API
+- [OpenWebUI Documentation](https://docs.openwebui.com/) — frontend integration, connectors, and `<think>` block rendering
+- [FAISS Documentation](https://faiss.ai/) — vector similarity search
+- [Sentence-Transformers Documentation](https://www.sbert.net/) — embedding models used for retrieval
+
+---
+
 ## Author
 
 Built by **Maham** as part of internship project.
